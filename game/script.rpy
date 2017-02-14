@@ -3,6 +3,23 @@
 # Declare characters used by this game. The color argument colorizes the
 # name of the character.
 
+
+image tanya = AttributeImage([
+        Attribute("base", "base", "Tanya_base.png"),
+        Attribute("emotion", "normal", "eyebrow1.png"),
+        Attribute("emotion", "normal", "eye1.png"),
+        Attribute("emotion", "normal", "mouth1.png"),
+        Attribute("glasses", "glasses", "megane.png"),
+        Attribute("time", "eve", "overlay_eve.png"),
+        Attribute("time", "night", "overlay_night.png"),
+        Attribute("time", "fire", "overlay_fire.png"),
+        Attribute("time", "day", "overlay_day.png"),
+    ],
+    image_format="tanya/{image}"
+    )
+
+
+
 define e = Character("Eileen")
 
 
