@@ -95,15 +95,30 @@ init python:
 
             self.attributes = [ ]
 
+            import collections
+
+            self.attribute_to_groups = collections.defaultdict(set)
+            self.group_to_attributes = collections.defaultdict(set)
+
             for i in attributes:
                 self.add(i)
+
+                if i.group is not None:
+                    self.attribute_to_groups[i.attribute].add(i.group)
+                    self.group_to_attributes[i.group].add(i.attribute)
+
 
         def add(self, a):
             a.apply_format(self.image_format)
             self.attributes.append(a)
 
         def _duplicate(self, args):
-            return Null()
+
+            name = " ".join(args.name + tuple(args.args))
+
+            text = Text(name, xalign=0.5, yalign=0.0)
+
+            return text
 
 
 
