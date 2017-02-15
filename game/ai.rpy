@@ -116,10 +116,14 @@ init python:
 
             name = " ".join(args.name + tuple(args.args))
 
-            text = Text(name, xalign=0.5, yalign=0.0)
 
-            return text
+            rv = Fixed(xfit=True, yfit=True)
 
+            for a in self.attributes:
+                if a.attribute in args.args:
+                    rv.add(a.image)
+
+            return rv
 
 
 
