@@ -5,12 +5,12 @@
 
 
 image tanya = AttributeImage([
-        Attribute("base", "base", "Tanya_base.png"),
+        Attribute("base", "base", "Tanya_base.png", default=True),
         Attribute("emotion", "normal", "eyebrow1.png"),
         Attribute("emotion", "normal", "eye1.png"),
         Attribute("emotion", "normal", "mouth1.png"),
         Attribute("glasses", "glasses", "megane.png"),
-        Attribute("time", "eve", "overlay_eve.png"),
+        Attribute("time", "eve", "overlay_eve.png", default=True),
         Attribute("time", "night", "overlay_night.png"),
         Attribute("time", "fire", "overlay_fire.png"),
         Attribute("time", "day", "overlay_day.png"),
@@ -20,7 +20,8 @@ image tanya = AttributeImage([
 
 
 
-define e = Character("Eileen")
+label main_menu:
+    return
 
 
 # The game starts here.
@@ -31,22 +32,17 @@ label start:
     # add a file (named either "bg room.png" or "bg room.jpg") to the
     # images directory to show it.
 
-    scene bg room
+    # scene bg room
 
     # This shows a character sprite. A placeholder is used, but you can
     # replace it by adding a file named "eileen happy.png" to the images
     # directory.
 
-    show tanya base normal glasses eve
+    show tanya normal glasses
 
-    # These display lines of dialogue.
+    "This is the normal mood."
 
-    "Hello, world."
+    show tanya normal fire
 
-    e "You've created a new Ren'Py game."
+    "And this is fire-time."
 
-    e "Once you add a story, pictures, and music, you can release it to the world!"
-
-    # This ends the game.
-
-    return

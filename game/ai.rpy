@@ -25,6 +25,10 @@ init python:
             If not None, this should be a displayable that is displayed when
             this attribute is shown.
 
+        `default`
+            If True, and no attribute that conflicts with this attribute has
+            been given, this attribute can be used.
+
         If the `offset` parameter is not a tuple and the `image` parameter is
         not given or None, the offset parameter is interpreted as the image
         parameter instead. (This allows the offset to be omitted when it's
@@ -36,7 +40,7 @@ init python:
         """
 
 
-        def __init__(self, group, attribute, offset=None, image=None):
+        def __init__(self, group, attribute, offset=None, image=None, default=False):
 
 
             if (offset is not None) and (not isinstance(offset, tuple)):
@@ -50,6 +54,7 @@ init python:
             self.attribute = attribute
             self.offset = offset
             self.image = image
+            self.default = default
 
         def apply_format(self, format):
 
@@ -96,7 +101,6 @@ init python:
             self.attributes = [ ]
 
             import collections
-
             self.attribute_to_groups = collections.defaultdict(set)
             self.group_to_attributes = collections.defaultdict(set)
 
@@ -107,7 +111,6 @@ init python:
                     self.attribute_to_groups[i.attribute].add(i.group)
                     self.group_to_attributes[i.group].add(i.attribute)
 
-
         def add(self, a):
             a.apply_format(self.image_format)
             self.attributes.append(a)
@@ -116,11 +119,23 @@ init python:
 
             name = " ".join(args.name + tuple(args.args))
 
+            attributes = set(args.args)
+            banned = set()
+
+            for i in attributes:
+                for g in self.attribute_to_groups[i]:
+                    for j in self.group_to_attributes[g]:
+                        if j != i:
+                            banned.add(j)
+
+            for a in self.attributes:
+                if a.default and (a.attribute not in banned):
+                    attributes.add(a.attribute)
 
             rv = Fixed(xfit=True, yfit=True)
 
             for a in self.attributes:
-                if a.attribute in args.args:
+                if a.attribute in attributes:
                     rv.add(a.image)
 
             return rv
