@@ -115,18 +115,27 @@ init python:
             a.apply_format(self.image_format)
             self.attributes.append(a)
 
-        def _duplicate(self, args):
+        def get_banned(self, attributes):
+            """
+            Get the set of attributes that are incompatible with those
+            in attributes.
+            """
 
-            name = " ".join(args.name + tuple(args.args))
-
-            attributes = set(args.args)
-            banned = set()
+            rv = set()
 
             for i in attributes:
                 for g in self.attribute_to_groups[i]:
                     for j in self.group_to_attributes[g]:
                         if j != i:
                             banned.add(j)
+            return rv
+
+        def _duplicate(self, args):
+
+            name = " ".join(args.name + tuple(args.args))
+
+            attributes = set(args.args)
+            banned = self.get_banned(attributes)
 
             for a in self.attributes:
                 if a.default and (a.attribute not in banned):
@@ -139,6 +148,26 @@ init python:
                     rv.add(a.image)
 
             return rv
+
+        def _list_attributes(self, attributes):
+            banned = self.get_banned(attributes)
+
+            rv = [ ]
+            seen = set()
+
+            for a in self.attributes:
+                if a.attribute in banned:
+                    continue
+
+                if a.attribute in seen:
+                    continue
+
+                seen.add(a.attribute)
+                rv.add(a.attribute)
+
+            return rv
+
+
 
 
 
