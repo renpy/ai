@@ -12,7 +12,7 @@ image tanya = AttributeImage([
         Attribute("emotion", "huh", "eyebrow2.png"),
         Attribute("emotion", "worry", "eyebrow2.png"),
 
-        Attribute("emotion", "normal", "eye1.png"),
+        Attribute("emotion", "normal", "eye1.png", pos=(100, 0)),
         Attribute("emotion", "happy", "eye1.png"),
         Attribute("emotion", "huh", "eye3.png"),
         Attribute("emotion", "worry", "eye1.png"),

@@ -25,14 +25,10 @@ init python:
             If not None, this should be a displayable that is displayed when
             this attribute is shown.
 
-        `default`
-            If True, and no attribute that conflicts with this attribute has
-            been given, this attribute can be used.
-
-        If the `offset` parameter is not a tuple and the `image` parameter is
-        not given or None, the offset parameter is interpreted as the image
-        parameter instead. (This allows the offset to be omitted when it's
-        (0, 0) ).
+        Other keyword arguments are interpreted as transform properties. If
+        any are present, a transform is created that wraps the image. (For
+        example, pos=(100, 200) can be used to offset the image by 100 pixels
+        horizontally and 200 vertically.)
 
         If the `image` parameter is omitted or None, and the AttributeImage
         has been given the `image_format` parameter, the image_format is used
@@ -40,21 +36,14 @@ init python:
         """
 
 
-        def __init__(self, group, attribute, offset=None, image=None, default=False):
-
-
-            if (offset is not None) and (not isinstance(offset, tuple)):
-                if image is None:
-                    image = offset
-                    offset = None
-                else:
-                    raise Exception("An Attribute's offset must be a tuple.")
+        def __init__(self, group, attribute,  image=None, default=False, **kwargs):
 
             self.group = group
             self.attribute = attribute
-            self.offset = offset
             self.image = image
             self.default = default
+
+            self.transform_args = kwargs
 
         def apply_format(self, format):
 
@@ -68,6 +57,11 @@ init python:
             elif isinstance(self.image, basestring):
 
                 self.image = format.format(group=self.group, attribute=self.attribute, image=self.image)
+
+
+            if self.transform_args:
+
+                self.image = Transform(self.image, **self.transform_args)
 
 
     class AttributeImage(renpy.object.Object):
