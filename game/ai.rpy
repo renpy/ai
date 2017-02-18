@@ -127,7 +127,7 @@ init python:
                 for g in self.attribute_to_groups[i]:
                     for j in self.group_to_attributes[g]:
                         if j != i:
-                            banned.add(j)
+                            rv.add(j)
             return rv
 
         def _duplicate(self, args):
@@ -166,6 +166,30 @@ init python:
                 rv.add(a.attribute)
 
             return rv
+
+        def _choose_attributes(self, tag, attributes, optional):
+
+            attributes = set(attributes)
+            banned = self.get_banned(attributes)
+
+            both = attributes & banned
+
+            if both:
+                raise Exception("The attributes for {} conflict: {}".format(tag, " ".join(both)))
+
+
+            if optional is not None:
+                attributes |= (set(optional) - banned)
+
+            rv = [ ]
+
+            for a in self.attributes:
+                if a.attribute in attributes:
+                    rv.append(a.attribute)
+                    attributes.remove(a.attribute)
+
+            return tuple(rv)
+
 
 
 
