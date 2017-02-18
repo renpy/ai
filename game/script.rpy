@@ -6,10 +6,24 @@
 
 image tanya = AttributeImage([
         Attribute("base", "base", "Tanya_base.png", default=True),
+
         Attribute("emotion", "normal", "eyebrow1.png"),
+        Attribute("emotion", "happy", "eyebrow1.png"),
+        Attribute("emotion", "huh", "eyebrow2.png"),
+        Attribute("emotion", "worry", "eyebrow2.png"),
+
         Attribute("emotion", "normal", "eye1.png"),
+        Attribute("emotion", "happy", "eye1.png"),
+        Attribute("emotion", "huh", "eye3.png"),
+        Attribute("emotion", "worry", "eye1.png"),
+
         Attribute("emotion", "normal", "mouth1.png"),
+        Attribute("emotion", "happy", "mouth2.png"),
+        Attribute("emotion", "huh", "mouth3.png"),
+        Attribute("emotion", "worry", "mouth1.png"),
+
         Attribute("glasses", "glasses", "megane.png"),
+
         Attribute("time", "eve", "overlay_eve.png", default=True),
         Attribute("time", "night", "overlay_night.png"),
         Attribute("time", "fire", "overlay_fire.png"),
@@ -29,7 +43,7 @@ label start:
 
     "This is the normal mood."
 
-    show tanya fire -glasses
+    show tanya happy fire -glasses
 
     "And this is fire-time."
 
