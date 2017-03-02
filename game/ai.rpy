@@ -4,10 +4,10 @@ init python:
 
     class Attribute(renpy.object.Object):
         """
-        Represents a mapping from an attribute to an image as part of an
-        attribute image. An attribute can be mapped to multiple images, in
-        which case all images corresponding to that attribute will be
-        displayed.
+        This is used to represent a layer of an AttributeImage that is
+        controlled by an attribute. A single attribute can control
+        multiple layers, in which case all layers corresponding to
+        that attribute will be displayed.
 
         `group`
             A string giving the group the attribute is part of. An attribute
@@ -52,16 +52,70 @@ init python:
                 if format is None:
                     raise Exception("Attribute(%r, %r) was not given an image parameter.".format(self.group, self.attribute))
 
-                self.image = format.format(group=self.group, attribute=self.attribute)
+                self.image = format.format(group=self.group, attribute=self.attribute, image="")
 
             elif isinstance(self.image, basestring):
 
-                self.image = format.format(group=self.group, attribute=self.attribute, image=self.image)
+                if format is not None:
+                    self.image = format.format(group=self.group, attribute=self.attribute, image=self.image)
 
+            self.image = renpy.displayable(self.image)
 
             if self.transform_args:
 
                 self.image = Transform(self.image, **self.transform_args)
+
+        def get_displayable(self, attributes):
+
+            if self.attribute in attributes:
+                return self.image
+
+            return None
+
+
+    class Condition(renpy.object.Object):
+        """
+        This is used to represent a layer of an AttributeImage that
+        is controlled by a condition. When the condition is true,
+        the layer is displayed. Otherwise, nothing is displayed.
+
+        `condition`
+            This should be a string giving a Python condition that determines
+            if the layer is displayed.
+
+        `image`
+            The displayable that is shown when the condition is True.
+
+        Other keyword arguments are interpreted as transform properties. If
+        any are present, a transform is created that wraps the image. (For
+        example, pos=(100, 200) can be used to offset the image by 100 pixels
+        horizontally and 200 vertically.)
+        """
+
+        def __init__(self, condition, image, **kwargs):
+            self.condition = condition
+            self.image = image
+
+            self.transform_args = kwargs
+
+        def apply_format(self, format):
+
+            if isinstance(self.image, basestring):
+
+                if format is not None:
+                    self.image = format.format(group="", attribute="", image=self.image)
+
+            self.image = renpy.displayable(self.image)
+
+            if self.transform_args:
+
+                self.image = Transform(self.image, **self.transform_args)
+
+        def get_displayable(self, attributes):
+            return ConditionSwitch(
+                self.condition, self.image,
+                None, Null(),
+            )
 
 
     class AttributeImage(renpy.object.Object):
@@ -79,13 +133,18 @@ init python:
 
         `image_format`
             If not None, this should be a string giving a Python format pattern.
-            If an attribute is not given the image parameter, "{group}" is replaced
+
+            If an attribute layer is not given the image parameter, "{group}" is replaced
             with the involved group, "{attribute}" is replaced with the involved
-            attribute, and the image so produced is used instead. If the attribute
-            is given a string as an image paramter, "{image}" is replaced with
-            by that parameter, in addition to the "{group}" and "{attribute}"
+            attribute, and the image so produced is used instead.
+
+            If an attribute layer is given a string as an image parameter, "{image}" is
+            replaced with by that parameter, in addition to the "{group}" and "{attribute}"
             substitutions.
 
+            If a condition layer is given a string as an image parameter, "{image}" is
+            replaced with that parameter, while "{group}" and "{attribute}" are replaced
+            with the empty string.
         """
 
         def __init__(self, attributes, image_format=None):
@@ -93,6 +152,7 @@ init python:
             self.image_format = image_format
 
             self.attributes = [ ]
+            self.layers = [ ]
 
             import collections
             self.attribute_to_groups = collections.defaultdict(set)
@@ -101,13 +161,16 @@ init python:
             for i in attributes:
                 self.add(i)
 
-                if i.group is not None:
-                    self.attribute_to_groups[i.attribute].add(i.group)
-                    self.group_to_attributes[i.group].add(i.attribute)
-
         def add(self, a):
             a.apply_format(self.image_format)
-            self.attributes.append(a)
+            self.layers.append(a)
+
+            if isinstance(a, Attribute):
+                self.attributes.append(a)
+
+                if a.group is not None:
+                    self.attribute_to_groups[a.attribute].add(a.group)
+                    self.group_to_attributes[a.group].add(a.attribute)
 
         def get_banned(self, attributes):
             """
@@ -137,9 +200,15 @@ init python:
 
             rv = Fixed(xfit=True, yfit=True)
 
-            for a in self.attributes:
-                if a.attribute in attributes:
-                    rv.add(a.image)
+            for i in self.layers:
+                d = i.get_displayable(attributes)
+
+                if d is not None:
+
+                    if d._duplicatable:
+                        d = d._duplicate(args)
+
+                    rv.add(d)
 
             return rv
 
