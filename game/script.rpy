@@ -12,7 +12,7 @@ image tanya = AttributeImage([
         Attribute("emotion", "huh", "eyebrow2.png"),
         Attribute("emotion", "worry", "eyebrow2.png"),
 
-        Attribute("emotion", "normal", "eye1.png", pos=(100, 0)),
+        Attribute("emotion", "normal", "eye1.png"),
         Attribute("emotion", "happy", "eye1.png"),
         Attribute("emotion", "huh", "eye3.png"),
         Attribute("emotion", "worry", "eye1.png"),
@@ -22,7 +22,7 @@ image tanya = AttributeImage([
         Attribute("emotion", "huh", "mouth3.png"),
         Attribute("emotion", "worry", "mouth1.png"),
 
-        Attribute("glasses", "glasses", "megane.png"),
+        Condition("glasses", "megane.png"),
 
         Attribute("time", "eve", "overlay_eve.png", default=True),
         Attribute("time", "night", "overlay_night.png"),
@@ -37,13 +37,23 @@ label main_menu:
     return
 
 
+default glasses = True
+
 label start:
 
-    show tanya normal glasses
+    menu:
+        "Glasses.":
+            $ glasses = True
+        "No glasses.":
+            $ glasses = False
+
+
+    show tanya normal
 
     "This is the normal mood."
 
-    show tanya happy fire -glasses
+    show tanya happy fire
+    with dissolve
 
     "And this is fire-time."
 
