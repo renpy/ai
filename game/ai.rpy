@@ -153,9 +153,15 @@ init python:
         `at`
             A transform or list of transforms that are applied to the displayable
             after it is parameterized.
+
+
+        Additional keyword arguments are passed to a Fixed that is created to hold
+        the layer. Unless explicitly overridden, xfit and yfit are set to true on
+        the Fixed, which means it will shrink to the smallest size that fits all
+        of the layer images it is showing.
         """
 
-        def __init__(self, attributes, image_format=None, at=[]):
+        def __init__(self, attributes, image_format=None, at=[], **kwargs):
 
             self.image_format = image_format
 
@@ -173,6 +179,11 @@ init python:
                 at = [ at ]
 
             self.at = at
+
+            kwargs.setdefault("xfit", True)
+            kwargs.setdefault("yfit", True)
+
+            self.fixed_args = kwargs
 
         def add(self, a):
             a.apply_format(self.image_format)
@@ -211,7 +222,7 @@ init python:
                 if a.default and (a.attribute not in banned):
                     attributes.add(a.attribute)
 
-            rv = Fixed(xfit=True, yfit=True)
+            rv = Fixed(**self.fixed_args)
 
             for i in self.layers:
                 d = i.get_displayable(attributes)
