@@ -29,7 +29,8 @@ image tanya = AttributeImage([
         Attribute("time", "fire", "overlay_fire.png"),
         Attribute("time", "day", "overlay_day.png"),
     ],
-    image_format="tanya/{image}"
+    image_format="tanya/{image}",
+    at=right,
     )
 
 

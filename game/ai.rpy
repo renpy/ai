@@ -145,9 +145,13 @@ init python:
             If a condition layer is given a string as an image parameter, "{image}" is
             replaced with that parameter, while "{group}" and "{attribute}" are replaced
             with the empty string.
+
+        `at`
+            A transform or list of transforms that are applied to the displayable
+            after it is parameterized.
         """
 
-        def __init__(self, attributes, image_format=None):
+        def __init__(self, attributes, image_format=None, at=[]):
 
             self.image_format = image_format
 
@@ -160,6 +164,11 @@ init python:
 
             for i in attributes:
                 self.add(i)
+
+            if not isinstance(at, list):
+                at = [ at ]
+
+            self.at = at
 
         def add(self, a):
             a.apply_format(self.image_format)
@@ -209,6 +218,9 @@ init python:
                         d = d._duplicate(args)
 
                     rv.add(d)
+
+            for i in self.at:
+                rv = i(rv)
 
             return rv
 
