@@ -33,6 +33,10 @@ init python:
         If the `image` parameter is omitted or None, and the AttributeImage
         has been given the `image_format` parameter, the image_format is used
         to generate an image filename.
+
+        Note that an attribute image is not a displayable, and can't be used
+        in all the places where a displayable can be used. This is because it
+        expects ImageAttributes to work, and so can't work without them.
         """
 
 
