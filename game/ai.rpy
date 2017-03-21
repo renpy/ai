@@ -33,10 +33,6 @@ init python:
         If the `image` parameter is omitted or None, and the AttributeImage
         has been given the `image_format` parameter, the image_format is used
         to generate an image filename.
-
-        Note that an attribute image is not a displayable, and can't be used
-        in all the places where a displayable can be used. This is because it
-        expects ImageAttributes to work, and so can't work without them.
         """
 
 
@@ -154,11 +150,16 @@ init python:
             A transform or list of transforms that are applied to the displayable
             after it is parameterized.
 
-
         Additional keyword arguments are passed to a Fixed that is created to hold
         the layer. Unless explicitly overridden, xfit and yfit are set to true on
         the Fixed, which means it will shrink to the smallest size that fits all
         of the layer images it is showing.
+
+        An AttributeImage is not a displayable, and can't be used in all the
+        places a displayable can be used. This is because it requires an image
+        name (generally including imafge attributes) to be provided. As such,
+        it should either be displayed through a scene or show statement, or by
+        an image name string used as a displayable.
         """
 
         def __init__(self, attributes, image_format=None, at=[], **kwargs):
