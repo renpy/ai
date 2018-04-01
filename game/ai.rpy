@@ -12,7 +12,8 @@ init python:
         `group`
             A string giving the group the attribute is part of. An attribute
             must belong to a single group, and the attribute conflicts with
-            other attributes in that group.
+            other attributes in that group. (For a single attribute, this
+            can be the same as `attribute`.)
 
         `attribute`
             A string giving the name of the attribute.
@@ -116,6 +117,29 @@ init python:
                 None, Null(),
             )
 
+    class ConditionGroup(renpy.object.Object):
+        """
+        Combines a list of conditions into a single ConditionSwitch.
+        """
+
+        def __init__(self, conditions):
+            self.conditions = conditions
+
+        def apply_format(self, format):
+            for i in self.conditions:
+                i.apply_format(format)
+
+        def get_displayable(self, attributes):
+            args = [ ]
+
+            for i in self.conditions:
+                args.append(i.condition)
+                args.append(i.image)
+
+            args.append(None)
+            args.append(Null())
+
+            return ConditionSwitch(*args)
 
     class AttributeImage(renpy.object.Object):
         """

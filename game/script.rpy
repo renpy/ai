@@ -22,7 +22,9 @@ image tanya = AttributeImage([
         Attribute("emotion", "huh", "mouth3.png"),
         Attribute("emotion", "worry", "mouth1.png"),
 
-        Condition("glasses", "megane.png"),
+        ConditionGroup([
+            Condition("glasses", "megane.png"),
+            ]),
 
         Attribute("time", "eve", "overlay_eve.png", default=True),
         Attribute("time", "night", "overlay_night.png"),
