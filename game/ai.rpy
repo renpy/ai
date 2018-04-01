@@ -26,6 +26,10 @@ init python:
             If True, and no other attribute for the group is selected,
             this attribute is.
 
+        `at`
+            A transform or list of transforms that are applied to the
+            image.
+
         Other keyword arguments are interpreted as transform properties. If
         any are present, a transform is created that wraps the image. (For
         example, pos=(100, 200) can be used to offset the image by 100 pixels
@@ -36,12 +40,17 @@ init python:
         to generate an image filename.
         """
 
-        def __init__(self, group, attribute, image=None, default=False, **kwargs):
+        def __init__(self, group, attribute, image=None, default=False, at=[ ], **kwargs):
 
             self.group = group
             self.attribute = attribute
             self.image = image
             self.default = default
+
+            if not isinstance(at, list):
+                at = list(at)
+
+            self.at = at
 
             self.transform_args = kwargs
 
@@ -65,6 +74,9 @@ init python:
 
                 self.image = Transform(self.image, **self.transform_args)
 
+            for i in self.at:
+                self.image = i(self.image)
+
         def get_displayable(self, attributes):
 
             if self.attribute in attributes:
@@ -86,15 +98,26 @@ init python:
         `image`
             The displayable that is shown when the condition is True.
 
+        `at`
+            A transform or list of transforms that are applied to the
+            image.
+
         Other keyword arguments are interpreted as transform properties. If
         any are present, a transform is created that wraps the image. (For
         example, pos=(100, 200) can be used to offset the image by 100 pixels
         horizontally and 200 vertically.)
         """
 
-        def __init__(self, condition, image, **kwargs):
+        at = [ ]
+
+        def __init__(self, condition, image, at=[ ], **kwargs):
             self.condition = condition
             self.image = image
+
+            if not isinstance(at, list):
+                at = list(at)
+
+            self.at = at
 
             self.transform_args = kwargs
 
@@ -110,6 +133,9 @@ init python:
             if self.transform_args:
 
                 self.image = Transform(self.image, **self.transform_args)
+
+            for i in self.at:
+                self.image = i(self.image)
 
         def get_displayable(self, attributes):
             return ConditionSwitch(
