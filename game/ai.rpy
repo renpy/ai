@@ -17,13 +17,13 @@ init python:
         `attribute`
             A string giving the name of the attribute.
 
-        `offset`
-            If not None, a tuple giving the offset of the attribute from
-            the top left of the image.
-
         `image`
             If not None, this should be a displayable that is displayed when
             this attribute is shown.
+
+        `default`
+            If True, and no other attribute for the group is selected,
+            this attribute is.
 
         Other keyword arguments are interpreted as transform properties. If
         any are present, a transform is created that wraps the image. (For
@@ -35,8 +35,7 @@ init python:
         to generate an image filename.
         """
 
-
-        def __init__(self, group, attribute,  image=None, default=False, **kwargs):
+        def __init__(self, group, attribute, image=None, default=False, **kwargs):
 
             self.group = group
             self.attribute = attribute
@@ -280,9 +279,3 @@ init python:
                     attributes.remove(a.attribute)
 
             return tuple(rv)
-
-
-
-
-
-
