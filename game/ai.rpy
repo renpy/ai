@@ -206,7 +206,7 @@ init python:
 
         An AttributeImage is not a displayable, and can't be used in all the
         places a displayable can be used. This is because it requires an image
-        name (generally including imafge attributes) to be provided. As such,
+        name (generally including image attributes) to be provided. As such,
         it should either be displayed through a scene or show statement, or by
         an image name string used as a displayable.
         """
