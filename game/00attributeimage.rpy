@@ -1,6 +1,8 @@
 init offset = -100
 
-init python:
+python early in _attribute:
+
+    from store import Transform, ConditionSwitch, Fixed, Null
 
     class Attribute(renpy.object.Object):
         """
@@ -329,3 +331,9 @@ init python:
                     attributes.remove(a.attribute)
 
             return tuple(rv)
+
+python early:
+    Attribute = _attribute.Attribute
+    AttributeImage = _attribute.AttributeImage
+    Condition = _attribute.Condition
+    ConditionGroup = _attribute.ConditionGroup
