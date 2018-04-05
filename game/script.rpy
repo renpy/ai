@@ -8,6 +8,9 @@ define t = Character("Tanya", image="tanya")
 attributeimage foo bar baz:
     at left
 
+    attribute base:
+         default True
+
 image tanya = AttributeImage([
         Attribute("base", "base", "Tanya_base.png", default=True),
 

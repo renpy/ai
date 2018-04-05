@@ -87,6 +87,14 @@ python early in _attribute:
             return None
 
 
+    class RawAttribute(object):
+
+        def __init__(self, group, name):
+            self.group = group
+            self.name = name
+            self.image = None
+            self.properties = { }
+
     class Condition(renpy.object.Object):
         """
         This is used to represent a layer of an AttributeImage that
@@ -361,7 +369,50 @@ python early in _attribute:
         return True
 
     def parse_attribute(l, parent, group):
-        raise Exception("Not implemented.")
+
+        name = l.require(l.image_name_component)
+
+        a = RawAttribute(group, name)
+        parent.children.append(a)
+
+        def line(l):
+
+            while True:
+
+                if parse_property(l, a, [ "default", "at" ]):
+                    continue
+
+                image = l.simple_expression()
+                if image is not None:
+
+                    if a.image is not None:
+                        l.error('An attribute can only have zero or one images, two found.')
+
+                    a.image = image
+                    continue
+
+                break
+
+
+        line(l)
+
+        if not l.match(':'):
+            l.expect_eol()
+            l.expect_noblock('attribute')
+            return
+
+
+        l.expect_block('attribute')
+        l.expect_eol()
+
+        ll = l.subblock_lexer()
+
+        while ll.advance():
+            line(ll)
+            ll.expect_eol()
+            ll.expect_noblock('attribute')
+
+        return
 
     def parse_group(l, parent):
         raise Exception("Not implemented.")
@@ -385,23 +436,27 @@ python early in _attribute:
         l.expect_block("attributeimage")
 
         ll = l.subblock_lexer()
+        ll.advance()
 
         name = " ".join(name)
         rv = RawAttributeImage(name)
 
-        while ll.advance():
+        while not ll.eob:
 
             if ll.match('attribute'):
 
                 parse_attribute(ll, rv, None)
+                ll.advance()
 
             elif ll.match('group'):
 
                 parse_group(ll, rv)
+                ll.advance()
 
             elif ll.match('if'):
 
                 parse_conditions(ll, rv)
+                # Advances for us.
 
             else:
 
@@ -410,6 +465,7 @@ python early in _attribute:
 
                 ll.expect_noblock('statement')
                 ll.expect_eol()
+                ll.advance()
 
         return rv
 
