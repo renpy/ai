@@ -332,6 +332,91 @@ python early in _attribute:
 
             return tuple(rv)
 
+    class RawAttributeImage(object):
+
+        def __init__(self, name):
+            self.name = name
+            self.children = [ ]
+            self.properties = { }
+
+
+
+    def parse_property(l, o, names):
+        """
+        Parses a property, returns True if one is found.
+        """
+
+        regex = "|".join(names)
+        name = l.match(regex)
+
+        if name is None:
+            return False
+
+        if name in o.properties:
+            ll.error("Duplicate property " + name)
+
+        expr = l.require(l.simple_expression)
+        o.properties[name] = expr
+
+        return True
+
+    def parse_attribute(l, parent, group):
+        raise Exception("Not implemented.")
+
+    def parse_group(l, parent):
+        raise Exception("Not implemented.")
+
+    def parse_conditions(l, parent):
+        raise Exception("Not implemented.")
+
+    def parse_attributeimage(l):
+
+        name = [ l.require(l.image_name_component) ]
+
+        while True:
+            part = l.image_name_component()
+
+            if part is None:
+                break
+
+            name.append(part)
+
+        l.require(':')
+        l.expect_block("attributeimage")
+
+        ll = l.subblock_lexer()
+
+        name = " ".join(name)
+        rv = RawAttributeImage(name)
+
+        while ll.advance():
+
+            if ll.match('attribute'):
+
+                parse_attribute(ll, rv, None)
+
+            elif ll.match('group'):
+
+                parse_group(ll, rv)
+
+            elif ll.match('if'):
+
+                parse_conditions(ll, rv)
+
+            else:
+
+                while parse_property(ll, rv, [ "image_format", "at" ]):
+                    pass
+
+                ll.expect_noblock('statement')
+                ll.expect_eol()
+
+        return rv
+
+
+    renpy.register_statement("attributeimage", parse=parse_attributeimage, init=True, block=True)
+
+
 python early:
     Attribute = _attribute.Attribute
     AttributeImage = _attribute.AttributeImage
