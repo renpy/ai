@@ -8,8 +8,15 @@ define t = Character("Tanya", image="tanya")
 attributeimage foo bar baz:
     at left
 
-    attribute base:
-         default True
+    attribute base "Tanya_base.png" default True
+
+    group emotion:
+        attribute normal "eyebrow1.png"
+        attribute happy "eyebrow1.png"
+        attribute huh "eyebrow2.png"
+        attribute worry "eyebrow2.png"
+
+
 
 image tanya = AttributeImage([
         Attribute("base", "base", "Tanya_base.png", default=True),

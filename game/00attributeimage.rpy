@@ -415,7 +415,19 @@ python early in _attribute:
         return
 
     def parse_group(l, parent):
-        raise Exception("Not implemented.")
+
+        group = l.require(l.image_name_component)
+        l.require(':')
+        l.expect_block("group")
+        l.expect_eol()
+
+        ll = l.subblock_lexer()
+
+
+        while ll.advance():
+            ll.require("attribute")
+            parse_attribute(ll, parent, group)
+
 
     def parse_conditions(l, parent):
         raise Exception("Not implemented.")
