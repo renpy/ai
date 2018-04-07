@@ -4,7 +4,7 @@ python early in _attribute:
 
     from store import Transform, ConditionSwitch, Fixed, Null
 
-    class Attribute(renpy.object.Object):
+    class Attribute(object):
         """
         This is used to represent a layer of an AttributeImage that is
         controlled by an attribute. A single attribute can control
@@ -95,7 +95,13 @@ python early in _attribute:
             self.image = None
             self.properties = { }
 
-    class Condition(renpy.object.Object):
+        def execute(self):
+            properties = { k : eval(v) for k, v in self.properties.items() }
+            return Attribute(self.group, self.name, eval(self.image), **properties)
+
+
+
+    class Condition(object):
         """
         This is used to represent a layer of an AttributeImage that
         is controlled by a condition. When the condition is true,
@@ -161,7 +167,12 @@ python early in _attribute:
             self.image = None
             self.properties = { }
 
-    class ConditionGroup(renpy.object.Object):
+        def execute(self):
+            properties = { k : eval(v) for k, v in self.properties.items() }
+            return Condition(self.condition, eval(self.image), **properties)
+
+
+    class ConditionGroup(object):
         """
         Combines a list of conditions into a single ConditionSwitch.
         """
@@ -190,8 +201,11 @@ python early in _attribute:
         def __init__(self):
             self.conditions = [ ]
 
+        def execute(self):
+            return ConditionGroup([ i.execute() for i in self.conditions ])
 
-    class AttributeImage(renpy.object.Object):
+
+    class AttributeImage(object):
         """
         This is an image-like object that, when shown with the proper set of
         attributes, shows a displayable created by compositing together the
@@ -361,7 +375,16 @@ python early in _attribute:
             self.children = [ ]
             self.properties = { }
 
+        def execute(self):
+            properties = { k : eval(v) for k, v in self.properties.items() }
 
+            renpy.image(
+                self.name,
+                AttributeImage([ i.execute() for i in self.children ], **properties),
+            )
+
+    def execute_attributeimage(rai):
+        rai.execute()
 
     def parse_property(l, o, names):
         """
@@ -381,6 +404,7 @@ python early in _attribute:
         o.properties[name] = expr
 
         return True
+
 
     def parse_attribute(l, parent, group):
 
@@ -428,6 +452,7 @@ python early in _attribute:
 
         return
 
+
     def parse_group(l, parent):
 
         group = l.require(l.image_name_component)
@@ -444,6 +469,8 @@ python early in _attribute:
 
 
     def parse_condition(l, need_expr):
+
+        l.skip_whitespace()
 
         if need_expr:
             condition = l.delimited_python(':')
@@ -485,6 +512,8 @@ python early in _attribute:
 
         if rv.image is None:
             l.error("A condition must have a displayable.")
+
+        return rv
 
 
     def parse_conditions(l, parent):
@@ -557,7 +586,7 @@ python early in _attribute:
         return rv
 
 
-    renpy.register_statement("attributeimage", parse=parse_attributeimage, init=True, block=True)
+    renpy.register_statement("attributeimage", parse=parse_attributeimage, execute=execute_attributeimage, init=True, block=True)
 
 
 python early:

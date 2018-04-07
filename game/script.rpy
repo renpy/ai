@@ -5,10 +5,12 @@
 
 define t = Character("Tanya", image="tanya")
 
-attributeimage foo bar baz:
-    at left
+attributeimage tanya:
 
-    attribute base "Tanya_base.png" default True
+    image_format "tanya/{image}"
+
+    attribute base "Tanya_base.png":
+        default True
 
     group emotion:
         attribute normal "eyebrow1.png"
@@ -16,48 +18,63 @@ attributeimage foo bar baz:
         attribute huh "eyebrow2.png"
         attribute worry "eyebrow2.png"
 
+    group emotion:
+        attribute normal "eye1.png"
+        attribute happy "eye1.png"
+        attribute huh "eye3.png"
+        attribute worry "eye1.png"
+
+    group emotion:
+        attribute normal "mouth1.png"
+        attribute happy "mouth2.png"
+        attribute huh "mouth3.png"
+        attribute worry "mouth1.png"
+
+
     if glasses:
         "megane.png"
 
-    elif googles:
-        "goggles.png"
+    group time:
 
-    else:
-        "horrible scars.png"
+        attribute eve "overlay_eve.png":
+            default True
+
+        attribute night "overlay_night.png"
+        attribute fire "overlay_night.png"
+        attribute day "overlay_night.png"
 
 
-
-
-image tanya = AttributeImage([
-        Attribute("base", "base", "Tanya_base.png", default=True),
-
-        Attribute("emotion", "normal", "eyebrow1.png"),
-        Attribute("emotion", "happy", "eyebrow1.png"),
-        Attribute("emotion", "huh", "eyebrow2.png"),
-        Attribute("emotion", "worry", "eyebrow2.png"),
-
-        Attribute("emotion", "normal", "eye1.png"),
-        Attribute("emotion", "happy", "eye1.png"),
-        Attribute("emotion", "huh", "eye3.png"),
-        Attribute("emotion", "worry", "eye1.png"),
-
-        Attribute("emotion", "normal", "mouth1.png"),
-        Attribute("emotion", "happy", "mouth2.png"),
-        Attribute("emotion", "huh", "mouth3.png"),
-        Attribute("emotion", "worry", "mouth1.png"),
-
-        ConditionGroup([
-            Condition("glasses", "megane.png"),
-            ]),
-
-        Attribute("time", "eve", "overlay_eve.png", default=True),
-        Attribute("time", "night", "overlay_night.png"),
-        Attribute("time", "fire", "overlay_fire.png"),
-        Attribute("time", "day", "overlay_day.png"),
-    ],
-    image_format="tanya/{image}",
-    at=right,
-    )
+#
+# image tanya = AttributeImage([
+#         Attribute("base", "base", "Tanya_base.png", default=True),
+#
+#         Attribute("emotion", "normal", "eyebrow1.png"),
+#         Attribute("emotion", "happy", "eyebrow1.png"),
+#         Attribute("emotion", "huh", "eyebrow2.png"),
+#         Attribute("emotion", "worry", "eyebrow2.png"),
+#
+#         Attribute("emotion", "normal", "eye1.png"),
+#         Attribute("emotion", "happy", "eye1.png"),
+#         Attribute("emotion", "huh", "eye3.png"),
+#         Attribute("emotion", "worry", "eye1.png"),
+#
+#         Attribute("emotion", "normal", "mouth1.png"),
+#         Attribute("emotion", "happy", "mouth2.png"),
+#         Attribute("emotion", "huh", "mouth3.png"),
+#         Attribute("emotion", "worry", "mouth1.png"),
+#
+#         ConditionGroup([
+#             Condition("glasses", "megane.png"),
+#             ]),
+#
+#         Attribute("time", "eve", "overlay_eve.png", default=True),
+#         Attribute("time", "night", "overlay_night.png"),
+#         Attribute("time", "fire", "overlay_fire.png"),
+#         Attribute("time", "day", "overlay_day.png"),
+#     ],
+#     image_format="tanya/{image}",
+#     at=right,
+#     )
 
 
 image side tanya = AttributeImage([
