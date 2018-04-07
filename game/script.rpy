@@ -16,6 +16,16 @@ attributeimage foo bar baz:
         attribute huh "eyebrow2.png"
         attribute worry "eyebrow2.png"
 
+    if glasses:
+        "megane.png"
+
+    elif googles:
+        "goggles.png"
+
+    else:
+        "horrible scars.png"
+
+
 
 
 image tanya = AttributeImage([

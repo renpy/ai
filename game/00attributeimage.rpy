@@ -153,6 +153,14 @@ python early in _attribute:
                 None, Null(),
             )
 
+
+    class RawCondition(object):
+
+        def __init__(self, condition):
+            self.condition = condition
+            self.image = None
+            self.properties = { }
+
     class ConditionGroup(renpy.object.Object):
         """
         Combines a list of conditions into a single ConditionSwitch.
@@ -176,6 +184,12 @@ python early in _attribute:
             args.append(Null())
 
             return ConditionSwitch(*args)
+
+    class RawConditionGroup(object):
+
+        def __init__(self):
+            self.conditions = [ ]
+
 
     class AttributeImage(renpy.object.Object):
         """
@@ -386,7 +400,7 @@ python early in _attribute:
                 if image is not None:
 
                     if a.image is not None:
-                        l.error('An attribute can only have zero or one images, two found.')
+                        l.error('An attribute can only have zero or one displayables, two found.')
 
                     a.image = image
                     continue
@@ -429,8 +443,69 @@ python early in _attribute:
             parse_attribute(ll, parent, group)
 
 
+    def parse_condition(l, need_expr):
+
+        if need_expr:
+            condition = l.delimited_python(':')
+        else:
+            condition = None
+
+        l.require(':')
+
+        l.expect_block('condition')
+        l.expect_eol()
+
+        ll = l.subblock_lexer()
+
+        rv = RawCondition(condition)
+
+        while ll.advance():
+
+
+            while True:
+
+                if parse_property(ll, rv, [ "at" ]):
+                    continue
+
+                image = ll.simple_expression()
+
+                if image is not None:
+
+                    if rv.image is not None:
+                        ll.error('A condition can only have one displayable, two found.')
+
+                    rv.image = image
+                    continue
+
+                break
+
+            ll.expect_noblock("condition properties")
+            ll.expect_eol()
+
+
+        if rv.image is None:
+            l.error("A condition must have a displayable.")
+
+
     def parse_conditions(l, parent):
-        raise Exception("Not implemented.")
+
+        cg = RawConditionGroup()
+
+        cg.conditions.append(parse_condition(l, True))
+        l.advance()
+
+        while l.match('elif'):
+
+            cg.conditions.append(parse_condition(l, True))
+            l.advance()
+
+        if l.match('else'):
+
+            cg.conditions.append(parse_condition(l, False))
+            l.advance()
+
+        parent.children.append(cg)
+
 
     def parse_attributeimage(l):
 
