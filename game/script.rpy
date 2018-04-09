@@ -40,8 +40,8 @@ attributeimage tanya:
             default True
 
         attribute night "overlay_night.png"
-        attribute fire "overlay_night.png"
-        attribute day "overlay_night.png"
+        attribute fire "overlay_fire.png"
+        attribute day "overlay_day.png"
 
 
 #

@@ -4,6 +4,8 @@ python early in _attribute:
 
     from store import Transform, ConditionSwitch, Fixed, Null
 
+    ATL_PROPERTIES =[ i for i in renpy.atl.PROPERTIES ]
+
     class Attribute(object):
         """
         This is used to represent a layer of an AttributeImage that is
@@ -417,7 +419,7 @@ python early in _attribute:
 
             while True:
 
-                if parse_property(l, a, [ "default", "at" ]):
+                if parse_property(l, a, [ "default", "at" ] + ATL_PROPERTIES):
                     continue
 
                 image = l.simple_expression()
@@ -491,7 +493,7 @@ python early in _attribute:
 
             while True:
 
-                if parse_property(ll, rv, [ "at" ]):
+                if parse_property(ll, rv, [ "at" ] + ATL_PROPERTIES):
                     continue
 
                 image = ll.simple_expression()
@@ -576,7 +578,7 @@ python early in _attribute:
 
             else:
 
-                while parse_property(ll, rv, [ "image_format", "at" ]):
+                while parse_property(ll, rv, [ "image_format", "at" ] + ATL_PROPERTIES):
                     pass
 
                 ll.expect_noblock('statement')
