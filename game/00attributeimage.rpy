@@ -92,16 +92,31 @@ python early in _attribute:
 
     class RawAttribute(object):
 
-        def __init__(self, group, name):
-            self.group = group
+        def __init__(self, name):
             self.name = name
             self.image = None
             self.properties = OrderedDict()
 
-        def execute(self):
+        def execute(self, group=None):
             properties = { k : eval(v) for k, v in self.properties.items() }
-            return Attribute(self.group, self.name, eval(self.image), **properties)
+            return [ Attribute(group, self.name, eval(self.image), **properties) ]
 
+    class RawAttributeGroup(object):
+
+        def __init__(self, group):
+
+            self.group = group
+            self.properties = OrderedDict()
+            self.children = [ ]
+
+        def execute(self):
+
+            rv = [ ]
+
+            for i in self.children:
+                rv.extend(i.execute(group=self.group))
+
+            return rv
 
 
     class Condition(object):
@@ -172,7 +187,7 @@ python early in _attribute:
 
         def execute(self):
             properties = { k : eval(v) for k, v in self.properties.items() }
-            return Condition(self.condition, eval(self.image), **properties)
+            return [ Condition(self.condition, eval(self.image), **properties) ]
 
 
     class ConditionGroup(object):
@@ -205,7 +220,12 @@ python early in _attribute:
             self.conditions = [ ]
 
         def execute(self):
-            return ConditionGroup([ i.execute() for i in self.conditions ])
+
+            l = [ ]
+            for i in self.conditions:
+                l.extend(i.execute())
+
+            return [ ConditionGroup(l) ]
 
 
     class AttributeImage(object):
@@ -381,9 +401,14 @@ python early in _attribute:
         def execute(self):
             properties = { k : eval(v) for k, v in self.properties.items() }
 
+
+            l = [ ]
+            for i in self.children:
+                l.extend(i.execute())
+
             renpy.image(
                 self.name,
-                AttributeImage([ i.execute() for i in self.children ], **properties),
+                AttributeImage(l, **properties),
             )
 
     def execute_attributeimage(rai):
@@ -409,11 +434,11 @@ python early in _attribute:
         return True
 
 
-    def parse_attribute(l, parent, group):
+    def parse_attribute(l, parent):
 
         name = l.require(l.image_name_component)
 
-        a = RawAttribute(group, name)
+        a = RawAttribute(name)
         parent.children.append(a)
 
         def line(l):
@@ -459,16 +484,19 @@ python early in _attribute:
     def parse_group(l, parent):
 
         group = l.require(l.image_name_component)
+
+        rv = RawAttributeGroup(group)
+        parent.children.append(rv)
+
         l.require(':')
         l.expect_block("group")
         l.expect_eol()
 
         ll = l.subblock_lexer()
 
-
         while ll.advance():
             ll.require("attribute")
-            parse_attribute(ll, parent, group)
+            parse_attribute(ll, rv)
 
 
     def parse_condition(l, need_expr):
@@ -564,7 +592,7 @@ python early in _attribute:
 
             if ll.match('attribute'):
 
-                parse_attribute(ll, rv, None)
+                parse_attribute(ll, rv)
                 ll.advance()
 
             elif ll.match('group'):
