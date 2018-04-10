@@ -3,6 +3,7 @@ init offset = -100
 python early in _attribute:
 
     from store import Transform, ConditionSwitch, Fixed, Null
+    from collections import OrderedDict
 
     ATL_PROPERTIES =[ i for i in renpy.atl.PROPERTIES ]
 
@@ -95,7 +96,7 @@ python early in _attribute:
             self.group = group
             self.name = name
             self.image = None
-            self.properties = { }
+            self.properties = OrderedDict()
 
         def execute(self):
             properties = { k : eval(v) for k, v in self.properties.items() }
@@ -167,7 +168,7 @@ python early in _attribute:
         def __init__(self, condition):
             self.condition = condition
             self.image = None
-            self.properties = { }
+            self.properties = OrderedDict()
 
         def execute(self):
             properties = { k : eval(v) for k, v in self.properties.items() }
@@ -375,7 +376,7 @@ python early in _attribute:
         def __init__(self, name):
             self.name = name
             self.children = [ ]
-            self.properties = { }
+            self.properties = OrderedDict()
 
         def execute(self):
             properties = { k : eval(v) for k, v in self.properties.items() }
