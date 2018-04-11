@@ -97,9 +97,16 @@ python early in _attribute:
             self.image = None
             self.properties = OrderedDict()
 
-        def execute(self, group=None):
-            properties = { k : eval(v) for k, v in self.properties.items() }
+        def execute(self, group=None, properties=None):
+
+            if properties is not None:
+                properties = dict(properties)
+            else:
+                properties = dict()
+
+            properties.update({ k : eval(v) for k, v in self.properties.items() })
             return [ Attribute(group, self.name, eval(self.image), **properties) ]
+
 
     class RawAttributeGroup(object):
 
@@ -111,10 +118,12 @@ python early in _attribute:
 
         def execute(self):
 
+            properties = { k : eval(v) for k, v in self.properties.items() }
+
             rv = [ ]
 
             for i in self.children:
-                rv.extend(i.execute(group=self.group))
+                rv.extend(i.execute(group=self.group, properties=properties))
 
             return rv
 
@@ -414,6 +423,7 @@ python early in _attribute:
     def execute_attributeimage(rai):
         rai.execute()
 
+
     def parse_property(l, o, names):
         """
         Parses a property, returns True if one is found.
@@ -495,8 +505,15 @@ python early in _attribute:
         ll = l.subblock_lexer()
 
         while ll.advance():
-            ll.require("attribute")
-            parse_attribute(ll, rv)
+            if ll.match("attribute"):
+                parse_attribute(ll, rv)
+                continue
+
+            while parse_property(ll, rv, [ "at" ] + ATL_PROPERTIES):
+                pass
+
+            ll.expect_eol()
+            ll.expect_noblock('group property')
 
 
     def parse_condition(l, need_expr):
@@ -619,9 +636,7 @@ python early in _attribute:
 
     renpy.register_statement("attributeimage", parse=parse_attributeimage, execute=execute_attributeimage, init=True, block=True)
 
-
-python early:
-    Attribute = _attribute.Attribute
-    AttributeImage = _attribute.AttributeImage
-    Condition = _attribute.Condition
-    ConditionGroup = _attribute.ConditionGroup
+    renpy.store.Attribute = Attribute
+    renpy.store.AttributeImage = AttributeImage
+    renpy.store.Condition = Condition
+    renpy.store.ConditionGroup = ConditionGroup
