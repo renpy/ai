@@ -7,6 +7,68 @@ python early in _attribute:
 
     ATL_PROPERTIES =[ i for i in renpy.atl.PROPERTIES ]
 
+    def format_function(what, name, group, attribute, image, image_format, **kwargs):
+        """
+        This is called to format the information about an attribute
+        or condtion into a displayable. This can be replaced by a
+        creator, but the new function should ignore unknown kwargs.
+
+        `what`
+            A string giving a description of the thing being formatted,
+            which is used to create better error messages.
+
+        `name`
+            The name of the attribute image.
+
+        `group`
+            The group of an attribute, None if not supplied or if it's
+            part of a condition.
+
+        `attribute`
+            The attribute itself.
+
+        `image`
+            Either a displayable or string.
+
+        `image_format`
+            The image_format argument of the attribute image.
+
+        If `image `is None, then `name`, `group` (if not None), and
+        `attribute` are combined to create `imasge`. If `images` is
+        a string, and `image_format` is not None, `image` is formatted
+        into the string to get the final displayable.
+
+        So if `name` is "eileen", `group` is "expression", and
+        `attribute` is "happy", `image` would be set to
+        "eileen expression happy". If `image_format` is "images/{image}.png",
+        the final image Ren'Py finds is "images/eileen expression happy.png".
+        But note that it would have found the same image without the format
+        argument.
+        """
+
+        if image is None:
+
+            if name is None:
+                raise Exception("Can't find an image name to format {}.".format(what))
+
+            if attribute is None:
+                raise Exception("Can't find an attribute name to format {}.".format(what))
+
+            parts = [ name ]
+
+            if group is not None:
+                parts.append(group)
+
+            parts.append(attribute)
+
+            image = " ".join(parts)
+
+        if isinstance(image, basestring) and (image_format is not None):
+            image = image_format.format(name=name, image=image)
+
+        return image
+
+
     class Attribute(object):
         """
         This is used to represent a layer of an AttributeImage that is
@@ -15,10 +77,9 @@ python early in _attribute:
         that attribute will be displayed.
 
         `group`
-            A string giving the group the attribute is part of. An attribute
-            must belong to a single group, and the attribute conflicts with
-            other attributes in that group. (For a single attribute, this
-            can be the same as `attribute`.)
+            A string giving the group the attribute is part of. This
+            may be None, in which case a group with the same name as
+            the attribute is created.
 
         `attribute`
             A string giving the name of the attribute.
@@ -47,7 +108,8 @@ python early in _attribute:
 
         def __init__(self, group, attribute, image=None, default=False, at=[ ], **kwargs):
 
-            self.group = group
+            self.raw_group = group
+            self.group = group or attribute
             self.attribute = attribute
             self.image = image
             self.default = default
@@ -59,28 +121,23 @@ python early in _attribute:
 
             self.transform_args = kwargs
 
-        def apply_format(self, format):
+        def apply_format(self, ai):
 
-            if self.image is None:
-
-                if format is None:
-                    raise Exception("Attribute(%r, %r) was not given an image parameter.".format(self.group, self.attribute))
-
-                self.image = format.format(group=self.group, attribute=self.attribute, image="")
-
-            elif isinstance(self.image, basestring):
-
-                if format is not None:
-                    self.image = format.format(group=self.group, attribute=self.attribute, image=self.image)
+            self.image = ai.format(
+                "Attribute ({!r}, {!r})".format(self.raw_group, self.attribute),
+                group=self.raw_group,
+                attribute=self.attribute,
+                image=self.image,
+                )
 
             self.image = renpy.displayable(self.image)
+
+            for i in self.at:
+                self.image = i(self.image)
 
             if self.transform_args:
 
                 self.image = Transform(self.image, **self.transform_args)
-
-            for i in self.at:
-                self.image = i(self.image)
 
         def get_displayable(self, attributes):
 
@@ -164,17 +221,18 @@ python early in _attribute:
 
             self.transform_args = kwargs
 
-        def apply_format(self, format):
+        def apply_format(self, ai):
 
-            if isinstance(self.image, basestring):
-
-                if format is not None:
-                    self.image = format.format(group="", attribute="", image=self.image)
+            self.image = ai.format(
+                "Condition ({})".format(self.condition),
+                group=None,
+                attribute=None,
+                image=self.image,
+                )
 
             self.image = renpy.displayable(self.image)
 
             if self.transform_args:
-
                 self.image = Transform(self.image, **self.transform_args)
 
             for i in self.at:
@@ -207,9 +265,9 @@ python early in _attribute:
         def __init__(self, conditions):
             self.conditions = conditions
 
-        def apply_format(self, format):
+        def apply_format(self, ai):
             for i in self.conditions:
-                i.apply_format(format)
+                i.apply_format(ai)
 
         def get_displayable(self, attributes):
             args = [ ]
@@ -250,24 +308,23 @@ python early in _attribute:
             with the first item further from the viewer and the last
             closest.
 
-        `image_format`
-            If not None, this should be a string giving a Python format pattern.
-
-            If an attribute layer is not given the image parameter, "{group}" is replaced
-            with the involved group, "{attribute}" is replaced with the involved
-            attribute, and the image so produced is used instead.
-
-            If an attribute layer is given a string as an image parameter, "{image}" is
-            replaced with by that parameter, in addition to the "{group}" and "{attribute}"
-            substitutions.
-
-            If a condition layer is given a string as an image parameter, "{image}" is
-            replaced with that parameter, while "{group}" and "{attribute}" are replaced
-            with the empty string.
-
         `at`
             A transform or list of transforms that are applied to the displayable
             after it is parameterized.
+
+        `name`
+            The name of the attribute image. This is used as part of the names
+            of image components.
+
+        `image_format`
+            When a given image is a string, and this is supplied, the image and
+            the name are interpolated into `image_format` to make an image. For example,
+            "sprites/{name}/{image}.png" will look for the image in a subdirectory
+            of sprites.
+
+        `format_function`
+            A function that is used instead of `_attribute.format_function` to format
+            the image information into a displayable.
 
         Additional keyword arguments are passed to a Fixed that is created to hold
         the layer. Unless explicitly overridden, xfit and yfit are set to true on
@@ -281,9 +338,11 @@ python early in _attribute:
         an image name string used as a displayable.
         """
 
-        def __init__(self, attributes, image_format=None, at=[], **kwargs):
+        def __init__(self, attributes, at=[], name=None, image_format=None, format_function=None, **kwargs):
 
+            self.name = name
             self.image_format = image_format
+            self.format_function = format_function
 
             self.attributes = [ ]
             self.layers = [ ]
@@ -305,8 +364,23 @@ python early in _attribute:
 
             self.fixed_args = kwargs
 
+        def format(self, what, attribute, group, image):
+
+            ff = format_function
+
+            if self.format_function is not None:
+                ff = self.format_function
+
+            return ff(
+                what=what,
+                name=self.name,
+                attribute=attribute,
+                group=group,
+                image=image,
+                image_format=self.image_format)
+
         def add(self, a):
-            a.apply_format(self.image_format)
+            a.apply_format(self)
             self.layers.append(a)
 
             if isinstance(a, Attribute):
@@ -417,7 +491,7 @@ python early in _attribute:
 
             renpy.image(
                 self.name,
-                AttributeImage(l, **properties),
+                AttributeImage(l, name=self.name, **properties),
             )
 
     def execute_attributeimage(rai):
@@ -624,7 +698,7 @@ python early in _attribute:
 
             else:
 
-                while parse_property(ll, rv, [ "image_format", "at" ] + ATL_PROPERTIES):
+                while parse_property(ll, rv, [ "image_format", "format_function", "at" ] + ATL_PROPERTIES):
                     pass
 
                 ll.expect_noblock('statement')
